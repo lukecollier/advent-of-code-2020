@@ -11,14 +11,24 @@ fn main() {
         .filter_map(Result::ok)
         .collect();
 
-    let mut result = 0;
+    let mut part_one_result = 0;
+    let mut part_two_result = 0;
     for first_num in &numbers {
         for second_num in &numbers {
             if (first_num + second_num) == 2020 {
-                result = first_num * second_num
+                part_one_result = first_num * second_num
             };
+            for third_num in &numbers {
+                if (first_num + second_num + third_num) == 2020 {
+                    part_two_result = first_num * second_num * third_num
+                };
+            }
         }
     }
 
-    println!("{:?}", result);
+    println!(
+        "two numbers that sum to 2020 then multiplied are := {}, three numbers that sum to 2020 then multiplied are := {}",
+        part_one_result,
+        part_two_result
+    );
 }
