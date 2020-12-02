@@ -20,6 +20,18 @@ impl Verification {
             .count();
         (usize::from(*self.min)..=usize::from(*self.max)).contains(&amount)
     }
+
+    pub fn is_valid_updated<'a>(&self, string: &'a str) -> bool {
+        let characters = string.chars().collect::<Vec<char>>();
+        let pos_one_is_character: Option<bool> = characters
+            .get(usize::from(*self.min - 1))
+            .map(|character| *self.character == *character);
+        let pos_two_is_character: Option<bool> = characters
+            .get(usize::from(*self.max - 1))
+            .map(|character| *self.character == *character);
+
+        pos_one_is_character.unwrap_or(false) ^ pos_two_is_character.unwrap_or(false)
+    }
 }
 
 fn parse<'a>(str: &'a str) -> Result<(Verification, String), &'a str> {
@@ -55,19 +67,89 @@ fn parse<'a>(str: &'a str) -> Result<(Verification, String), &'a str> {
 
 fn main() {
     let input = include_str!("input.txt");
-    let result = input
+    let part_one_result = input
         .split(LINE_ENDING)
         .map(|string: &str| parse(string))
         .filter_map(Result::ok)
         .filter(|(validation, password)| validation.is_valid(password))
         .count();
 
-    println!("{}", result);
+    let part_two_result = input
+        .split(LINE_ENDING)
+        .map(|string: &str| parse(string))
+        .filter_map(Result::ok)
+        .filter(|(validation, password)| validation.is_valid_updated(password))
+        .count();
+
+    println!(
+        "part_one:={}, part_two:={}",
+        part_one_result, part_two_result
+    );
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn can_validate_updated_is_correct() {
+        let input = "aab";
+        let result = Verification {
+            max: Box::new(3),
+            min: Box::new(1),
+            character: Box::new('a'),
+        }
+        .is_valid_updated(input);
+        assert_eq!(true, result);
+    }
+
+    #[test]
+    fn can_validate_updated_is_incorrect_at_end() {
+        let input = "aaa";
+        let result = Verification {
+            max: Box::new(3),
+            min: Box::new(1),
+            character: Box::new('a'),
+        }
+        .is_valid_updated(input);
+        assert_eq!(false, result);
+    }
+
+    #[test]
+    fn when_validate_updated_has_neither_is_false() {
+        let input = "bab";
+        let result = Verification {
+            max: Box::new(3),
+            min: Box::new(1),
+            character: Box::new('a'),
+        }
+        .is_valid_updated(input);
+        assert_eq!(false, result);
+    }
+
+    #[test]
+    fn when_validate_updated_has_last_is_true() {
+        let input = "baa";
+        let result = Verification {
+            max: Box::new(3),
+            min: Box::new(1),
+            character: Box::new('a'),
+        }
+        .is_valid_updated(input);
+        assert_eq!(true, result);
+    }
+
+    #[test]
+    fn can_validate_updated_is_correct_when_no_char_exists_at_max() {
+        let input = "aa";
+        let result = Verification {
+            max: Box::new(3),
+            min: Box::new(1),
+            character: Box::new('a'),
+        }
+        .is_valid_updated(input);
+        assert_eq!(true, result);
+    }
 
     #[test]
     fn can_validate_when_at_upper_boundary() {
