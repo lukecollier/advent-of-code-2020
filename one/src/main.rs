@@ -1,3 +1,5 @@
+use itertools::Itertools;
+
 #[cfg(windows)]
 const LINE_ENDING: &'static str = "\r\n";
 #[cfg(not(windows))]
@@ -5,30 +7,28 @@ const LINE_ENDING: &'static str = "\n";
 
 fn main() {
     let input: &str = include_str!("input.txt");
-    let numbers: Vec<i32> = input
+    let number_list = input
         .split(LINE_ENDING)
         .map(|number_str| number_str.parse::<i32>())
-        .filter_map(Result::ok)
-        .collect();
+        .filter_map(Result::ok);
 
-    let mut part_one_result = 0;
-    let mut part_two_result = 0;
-    for first_num in &numbers {
-        for second_num in &numbers {
-            if (first_num + second_num) == 2020 {
-                part_one_result = first_num * second_num
-            };
-            for third_num in &numbers {
-                if (first_num + second_num + third_num) == 2020 {
-                    part_two_result = first_num * second_num * third_num
-                };
-            }
-        }
-    }
+    let two_combinations = number_list
+        .clone()
+        .combinations(2)
+        .find(|combinations| combinations.iter().sum::<i32>() == 2020)
+        .map(|combinations| combinations.iter().product::<i32>());
+
+    let three_combinations = number_list
+        .clone()
+        .combinations(3)
+        .find(|combinations| combinations.iter().sum::<i32>() == 2020)
+        .map(|combinations| combinations.iter().product::<i32>());
+
+    // let three_combinations: Vec<Vec<i32>> = number_list.combinations(3).collect();
 
     println!(
         "two numbers that sum to 2020 then multiplied are := {}, three numbers that sum to 2020 then multiplied are := {}",
-        part_one_result,
-        part_two_result
+        two_combinations.unwrap(),
+        three_combinations.unwrap()
     );
 }
