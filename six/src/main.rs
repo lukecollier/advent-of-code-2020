@@ -19,5 +19,5 @@ fn main() {
         .collect::<Vec<_>>()
         .into_iter()
         .sum();
-    println!("hello {:?}", input);
+    println!("amount of people who answered yes in each group {}", input);
 }
