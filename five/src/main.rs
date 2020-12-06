@@ -1,3 +1,5 @@
+use itertools::Itertools;
+
 #[cfg(windows)]
 const LINE_ENDING: &'static str = "\r\n";
 #[cfg(not(windows))]
@@ -30,8 +32,9 @@ fn binary_search_index(bits: Vec<bool>) -> usize {
 
 fn main() {
     let input = include_str!("input.txt");
-    let max_seat_id = input
+    let boarding_passes = input
         .split(LINE_ENDING)
+        .filter(|str| !str.is_empty())
         .map(|boarding_pass| {
             let (row_chars, column_chars): (Vec<char>, Vec<char>) = boarding_pass
                 .chars()
@@ -59,10 +62,30 @@ fn main() {
                 column: binary_search_index(column_binary),
             }
         })
+        .collect::<Vec<BoardingPass>>();
+    let max_seat_id = (&boarding_passes)
+        .into_iter()
         .map(|boarding_pass| boarding_pass.seat_id())
         .max()
         .unwrap_or_else(|| panic!("failed to find maximum seat id"));
-    println!("{}", max_seat_id);
+    let (_, missing_id) = (&boarding_passes)
+        .into_iter()
+        .sorted_by(|a, b| Ord::cmp(&b.seat_id(), &a.seat_id()))
+        .fold(
+            (max_seat_id + 1, max_seat_id),
+            |(acc, cur), boarding_pass| {
+                let delta = acc - boarding_pass.seat_id();
+                if delta == 2 {
+                    (boarding_pass.seat_id(), boarding_pass.seat_id() + 1)
+                } else {
+                    (boarding_pass.seat_id(), cur)
+                }
+            },
+        );
+    println!(
+        "max seat id := {}, missing id := {}",
+        max_seat_id, missing_id
+    );
 }
 
 #[cfg(test)]
